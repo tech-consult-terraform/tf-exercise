@@ -2,6 +2,6 @@
 
 Task: 
 Create launch template and an ASG.
-Create VPC, subnets, IGW
+Create VPC, subnets, IGW..
 
 
