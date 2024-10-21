@@ -7,5 +7,5 @@ variable "region" {
 
 variable "sku" {
   description = "Instance Type"
-  default = "t4g.nano"
+  default = "t3.micro"
 }

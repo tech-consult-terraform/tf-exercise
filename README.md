@@ -9,6 +9,14 @@ Task: We used Terraform to provision, manage, and launch an Auto Scaling group w
 Providers.tf ---> assigned aws as the provider and created a region variable.
 <br>
 
+To deploy: 
+'''
+terraform init
+terraform validate
+terraform plan
+terraform apply
+'''
+
 Steps Taken:
 1. We used the vpc module to create a new VPC with public subnets in available AZs that we provisioned our resources in. 
 2. Then we defined the AMI for instance

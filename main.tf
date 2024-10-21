@@ -27,20 +27,22 @@ data "aws_ami" "amazon-linux" {
 }
 
 # Configure launch template (to specify the EC2 instance configuration that an ASG will use to launch each new instance)
-resource "aws_launch_configuration" "terramino" {
-    name_prefix     = "learn-terraform-aws-asg-"
+resource "aws_launch_template" "my_launch_template" {
+    name            = "my_launch_template"
         # name prefix to use for all versions of this launch configuration - Terraform will append a unique identifier to the prefix for each launch configuration created
 
     image_id        = data.aws_ami.amazon-linux.id
         # Amazon Linux AMI specified by a data source (data source from line 23)
 
-    instance_type   = "t2.micro"
+    instance_type   = "var.sku"
         # instance type
 
-    user_data       = file("user-data.sh")
+    user_data       = filebase64("${path.module}/user-data.sh")
+
+        # file("user-data.sh")
         # user data script - configures the instances to run the user-data.sh file in this repository at launch time
 
-    security_groups = [aws_security_group.terramino_instance.id]
+    vpc_security_group_ids = [aws_security_group.terramino_instance.id]
         # allows ingress traffic on port 80 and egress traffic to all endpoints
 
     lifecycle { # lifecycle block = use to avoid unwanted scaling of your ASG
@@ -48,18 +50,19 @@ resource "aws_launch_configuration" "terramino" {
             # Why use lifecyle block?
                 # bc you cannot modify a launch configuration, so any changes to the definition force Terraform to create a new resource. create_before_destroy argument in the lifecycle block instructs Terraform to create the new version before destroying the original to avoid any service interruptions
                 # use Terraform lifecycle arguments to avoid drift or accidental changes - since ASGs are dynamic and Terraform does not manage the underlying instances directly because every scaling action would introduce state drift. 
-
     }
 }
 
 # ASG configuration
 resource "aws_autoscaling_group" "terramino" {
   name                 = "terramino"
-  min_size             = 1
+  min_size             = 2
   max_size             = 3
-  desired_capacity     = 1
-  launch_configuration = aws_launch_configuration.terramino.name
-    # the launch configuration to use for each instance
+  desired_capacity     = 2
+  
+  launch_template { # Launch Template
+    id      = aws_launch_template.my_launch_template.id
+  }
 
   vpc_zone_identifier  = module.vpc.public_subnets
     # the subnets where the ASGs will launch new instances
