@@ -24,11 +24,6 @@ module "vpc" {
 data "aws_ami" "amazon-linux" {
   most_recent = true
   owners      = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["amzn-ami-hvm-*-x86_64-ebs"]
-  }
 }
 
 # Configure launch template (to specify the EC2 instance configuration that an ASG will use to launch each new instance)
@@ -112,7 +107,7 @@ resource "aws_lb_target_group" "terramino" {
 # aws_autoscaling_attachment resource links your ASG with the target group - allows AWS to automatically add/remove instances from the target group over their lifecycle.
 resource "aws_autoscaling_attachment" "terramino" {
   autoscaling_group_name = aws_autoscaling_group.terramino.id
-  alb_target_group_arn   = aws_lb_target_group.terramino.arn
+  lb_target_group_arn   = aws_lb_target_group.terramino.arn
 }
 
 # Security Group for ASG EC2 instances
