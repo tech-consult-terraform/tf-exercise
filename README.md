@@ -7,6 +7,7 @@ Task: We used Terraform to provision, manage, and launch an Auto Scaling group w
 
 
 Providers.tf ---> assigned aws as the provider and created a region variable.
+
 <br>
 
 To deploy: 
