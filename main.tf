@@ -28,13 +28,13 @@ data "aws_ami" "amazon-linux" {
 
 # Configure launch template (to specify the EC2 instance configuration that an ASG will use to launch each new instance)
 resource "aws_launch_template" "my_launch_template" {
-    name            = "my_launch_template"
+    name_prefix            = "fariha-lt"
         # name prefix to use for all versions of this launch configuration - Terraform will append a unique identifier to the prefix for each launch configuration created
 
     image_id        = data.aws_ami.amazon-linux.id
         # Amazon Linux AMI specified by a data source (data source from line 23)
 
-    instance_type   = "var.sku"
+    instance_type = "t3.micro"
         # instance type
 
     user_data       = filebase64("${path.module}/user-data.sh")
@@ -42,7 +42,7 @@ resource "aws_launch_template" "my_launch_template" {
         # file("user-data.sh")
         # user data script - configures the instances to run the user-data.sh file in this repository at launch time
 
-    vpc_security_group_ids = [aws_security_group.terramino_instance.id]
+    vpc_security_group_ids = ["${aws_security_group.terramino_instance.id}"]
         # allows ingress traffic on port 80 and egress traffic to all endpoints
 
     lifecycle { # lifecycle block = use to avoid unwanted scaling of your ASG
@@ -62,6 +62,7 @@ resource "aws_autoscaling_group" "terramino" {
   
   launch_template { # Launch Template
     id      = aws_launch_template.my_launch_template.id
+    version = "$Latest"
   }
 
   vpc_zone_identifier  = module.vpc.public_subnets
@@ -79,7 +80,7 @@ resource "aws_autoscaling_group" "terramino" {
 
 # Create an application load balancer
 resource "aws_lb" "terramino" {
-  name               = "learn-asg-terramino-lb"
+  name               = "fariha-asg-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.terramino_lb.id]
@@ -100,7 +101,7 @@ resource "aws_lb_listener" "terramino" {
 
 # Target group configuration - defines the collection of instances our ALB will send traffic to (TF does not manage the configuration of the targets in that group directly, but instead specifies a list of destinations the load balancer can forward requests to).
 resource "aws_lb_target_group" "terramino" {
-  name     = "learn-asg-terramino"
+  name     = "fariha-alb-target-group"
   port     = 80
   protocol = "HTTP"
   vpc_id   = module.vpc.vpc_id
